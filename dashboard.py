@@ -79,10 +79,14 @@ plt.tight_layout()
 st.pyplot(fig3)
 
 # --- CORRELATION ---
-st.subheader("Correlation Matrix")
+st.subheader("Correlation Matrix (Log Return)")
+
+# Calculate log returns based on the filtered dataset
+log_return_filtered = filtered_df[filtered_df.columns[1:]].apply(lambda col: np.log(col / col.shift(1)))
+
 fig4, ax4 = plt.subplots(figsize=(10, 10))
 sns.heatmap(
-    filtered_df[filtered_df.columns[1:]].corr(method='pearson'),
+    log_return_filtered.corr(method='pearson'),
     cmap='coolwarm_r',
     square=True,
     xticklabels=filtered_df.columns[1:], 
@@ -90,5 +94,5 @@ sns.heatmap(
     vmin=-1, vmax=1,
     ax=ax4
 )
-ax4.set_title("Correlation Matrix of PBMZI Companies' Stock Prices (Selected Years)", size=15, pad=20)
+ax4.set_title("Correlation Matrix of PBMZI Companies' Log Return (Selected Years)", size=15, pad=20)
 st.pyplot(fig4)
