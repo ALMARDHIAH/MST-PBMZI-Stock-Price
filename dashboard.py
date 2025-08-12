@@ -12,7 +12,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # --- Load Data ---
 @st.cache_data
 def load_data():
-    df = pd.read_excel("your_data.xlsx")
+    df = pd.read_excel("cleaned_PBMZI.xlsx")
     df['Date'] = pd.to_datetime(df['Date'])
     return df
 
