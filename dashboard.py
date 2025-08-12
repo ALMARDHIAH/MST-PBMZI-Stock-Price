@@ -16,7 +16,7 @@ st.title("PBMZI (2018-2023)")
 @st.cache_data
 def load_data():
     # Replace with your file path
-    df = pd.read_excel("your_data.xlsx")
+    df = pd.read_excel("cleaned_PBMZI.xlsx")
     df['Date'] = pd.to_datetime(df['Date'])
     return df
 
