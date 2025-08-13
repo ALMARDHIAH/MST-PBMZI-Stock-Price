@@ -1,6 +1,6 @@
 [theme]
 primaryColor = "#FF9800"
-backgroundColor = "#00094B"
-secondaryBackgroundColor = "#1E1E1E"
-textColor = "#E0E0E0"
+backgroundColor = "#DDE3FF"           # Light bluish background
+secondaryBackgroundColor = "#B3C4FF"  # Soft blue for sidebar
+textColor = "#000000"                 # Black text for better readability
 font = "monospace"
