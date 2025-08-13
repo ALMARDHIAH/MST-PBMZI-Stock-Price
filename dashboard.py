@@ -34,33 +34,6 @@ page = st.sidebar.radio("Go to:", ["PBMZI (2018-2023)", "MST Overview"])
 # Sidebar Navigation & Filters
 # =========================
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Go to:", ["PBMZI (2018-2023)", "MST Overview"])
-
-# Common filters in sidebar
-st.sidebar.subheader("Filters")
-
-# Companies filter only for PBMZI page
-all_companies = cleaned_PBMZI.columns[1:]
-
-# Page-specific filters
-if page == "PBMZI (2018-2023)":
-    selected_companies = st.sidebar.multiselect(
-        "Select companies:", all_companies, default=list(all_companies)
-    )
-
-    selected_years = st.sidebar.multiselect(
-        "Select years:", available_years, default=available_years
-    )
-    if not selected_years:
-        selected_years = list(range(2018, 2024))
-
-elif page == "MST Overview":
-    selected_years = st.sidebar.multiselect(
-        "Select year(s):", available_years
-    )
-    if not selected_years:
-        selected_years = list(range(2018, 2024))
-
 
 # =========================
 # PAGE 1 – PBMZI EDA
