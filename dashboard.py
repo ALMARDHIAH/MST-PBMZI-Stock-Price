@@ -31,11 +31,6 @@ st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to:", ["PBMZI (2018-2023)", "MST Overview"])
 
 # =========================
-# Sidebar Navigation & Filters
-# =========================
-st.sidebar.title("Navigation")
-
-# =========================
 # PAGE 1 – PBMZI EDA
 # =========================
 if page == "PBMZI (2018-2023)":
