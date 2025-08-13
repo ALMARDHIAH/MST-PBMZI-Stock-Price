@@ -8,29 +8,6 @@ import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-st.markdown(
-    
-    <style>
-    /* Tukar warna dan gaya tajuk utama */
-    h1 {
-        color: #4CAF50;
-        font-weight: bold;
-    }
-
-    /* Tukar warna background sidebar */
-    [data-testid="stSidebar"] {
-        background-color: #f0f0f0;
-    }
-
-    /* Tukar warna background utama */
-    [data-testid="stAppViewContainer"] {
-        background-color: #fafafa;
-    }
-    </style>
-    ,
-    unsafe_allow_html=True
-)
-
 # =========================
 # Load and prepare the data
 # =========================
