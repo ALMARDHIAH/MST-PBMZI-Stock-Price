@@ -7,147 +7,164 @@ import networkx as nx
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-import os
 
-# --- Load Data ---
+# =========================
+# Load and prepare the data
+# =========================
 @st.cache_data
 def load_data():
-    try:
-        df = pd.read_excel("cleaned_PBMZI.xlsx")
-        df['Date'] = pd.to_datetime(df['Date'])
-        # Ensure all columns after 'Date' are numeric, coerce errors to NaN
-        for c in df.columns[1:]:
-            df[c] = pd.to_numeric(df[c], errors="coerce")
-        return df
-    except FileNotFoundError:
-        st.error("The data file 'cleaned_PBMZI.xlsx' was not found in the working directory.")
-        return pd.DataFrame()
-    except Exception as e:
-        st.error(f"Failed to load data: {e}")
-        return pd.DataFrame()
+    df = pd.read_excel("your_data.xlsx")  # Change to your Excel file
+    # Do your cleaning steps here...
+    # For example: convert date
+    df['Date'] = pd.to_datetime(df['Date'])
+    return df
 
 cleaned_PBMZI = load_data()
 
-if cleaned_PBMZI.empty:
-    st.stop()
+# Extract available years
+available_years = sorted(cleaned_PBMZI['Date'].dt.year.unique())
 
-# --- Page Navigation ---
-page = st.sidebar.selectbox("Select Page", ["PBMZI (2018–2023)", "MST Overview"])
+# =========================
+# Sidebar Navigation
+# =========================
+st.sidebar.title("Navigation")
+page = st.sidebar.radio("Go to:", ["PBMZI (2018-2023)", "MST Overview"])
 
-# ----------------------------------------------------------------------
-# PAGE 1: PBMZI (2018–2023)
-# ----------------------------------------------------------------------
-if page == "PBMZI (2018–2023)":
-    st.title("PBMZI (2018–2023)")
+# =========================
+# PAGE 1 – PBMZI EDA
+# =========================
+if page == "PBMZI (2018-2023)":
+    st.title("PBMZI (2018-2023)")
 
-    # First Row Layout
-    col1, col2, col3, col4 = st.columns([1, 2, 4, 4])
+    # Select companies
+    all_companies = cleaned_PBMZI.columns[1:]
+    selected_companies = st.multiselect("Select companies:", all_companies, default=list(all_companies))
 
-    with col1:
-        st.markdown("### Year")
-        years = list(range(2018, 2024))
-        selected_years = [year for year in years if st.checkbox(str(year), True)]
-        if not selected_years:
-            st.warning("Select at least one year.")
-            st.stop()
-    with col2:
-        st.markdown("### Companies")
-        st.write(list(cleaned_PBMZI.columns[1:]))
+    # Select years
+    selected_years = st.multiselect("Select years:", available_years, default=available_years)
+    filtered_data = cleaned_PBMZI[cleaned_PBMZI['Date'].dt.year.isin(selected_years)]
 
-    # Filtered data
-    filtered_df = cleaned_PBMZI[cleaned_PBMZI['Date'].dt.year.isin(selected_years)]
-    if filtered_df.empty:
-        st.warning("No data for the selected year(s).")
-        st.stop()
+    # 1. Price Movement
+    st.subheader("Price Movement Overview")
+    fig, ax = plt.subplots(figsize=(14, 8))
+    for company in selected_companies:
+        ax.plot(filtered_data['Date'], filtered_data[company], label=company)
+    ax.legend()
+    ax.set_title("Price Movement of PBMZI ({}–{})".format(min(selected_years), max(selected_years)))
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Price (~M$)")
+    st.pyplot(fig)
 
-    with col3:
-        st.subheader("Price Movement")
-        fig1, ax1 = plt.subplots(figsize=(6, 4))
-        for company in filtered_df.columns[1:]:
-            if pd.api.types.is_numeric_dtype(filtered_df[company]):
-                ax1.plot(filtered_df['Date'], filtered_df[company], label=company)
-        ax1.legend(fontsize=6)
-        ax1.set_xlabel('Date')
-        ax1.set_ylabel('Price (~M$)')
-        st.pyplot(fig1)
+    # 2. Return Movement
+    st.subheader("Logarithmic Return Movement")
+    log_return = filtered_data[selected_companies].apply(lambda col: np.log(col / col.shift(1)))
+    fig, ax = plt.subplots(figsize=(14, 8))
+    for company in selected_companies:
+        ax.plot(filtered_data['Date'], log_return[company], label=company)
+    ax.legend()
+    ax.set_title("Logarithmic Return Movement of PLCs ({}–{})".format(min(selected_years), max(selected_years)))
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Log Return")
+    st.pyplot(fig)
 
-    with col4:
-        st.subheader("Return Movement")
-        # Log return, handle zeros or negatives to avoid log error
-        valid = (filtered_df[filtered_df.columns[1:]] > 0).all()
-        if not valid.any():
-            st.warning("No valid positive price data for log return.")
-        else:
-            log_return = filtered_df[filtered_df.columns[1:]].apply(
-                lambda col: np.log(col / col.shift(1)) if (col > 0).all() else np.nan
-            )
-            fig2, ax2 = plt.subplots(figsize=(6, 4))
-            for company in log_return.columns:
-                ax2.plot(filtered_df['Date'], log_return[company], label=company)
-            ax2.legend(fontsize=6)
-            ax2.set_xlabel('Date')
-            ax2.set_ylabel('Log Return')
-            st.pyplot(fig2)
+    # 3. Volatility
+    st.subheader("Volatility (60-Day Rolling STD)")
+    volatility_price_raw = filtered_data[selected_companies].rolling(window=60).std()
+    fig, ax = plt.subplots(figsize=(14, 8))
+    for company in selected_companies:
+        ax.plot(filtered_data['Date'], volatility_price_raw[company], label=company)
+    ax.legend()
+    ax.set_title("Volatility (60-Day Rolling STD) Based on Raw Price of PBMZIs")
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Rolling Std of Price (~M$)")
+    st.pyplot(fig)
 
-    # Second Row Layout
-    col5, col6 = st.columns(2)
+    # 4. Correlation Matrix
+    st.subheader("Correlation Matrix of Log Return")
+    fig, ax = plt.subplots(figsize=(10, 10))
+    sns.heatmap(log_return.corr(method='pearson'),
+                cmap='coolwarm_r',
+                square=True,
+                xticklabels=selected_companies,
+                yticklabels=selected_companies,
+                vmin=-1, vmax=1,
+                ax=ax)
+    ax.set_title("Correlation Matrix of PBMZI Companies' Log Return", size=15, pad=20)
+    st.pyplot(fig)
 
-    with col5:
-        st.subheader("Volatility (60-Day Rolling)")
-        volatility = filtered_df[filtered_df.columns[1:]].rolling(window=60).std()
-        fig3, ax3 = plt.subplots(figsize=(6, 4))
-        for company in volatility.columns:
-            ax3.plot(filtered_df['Date'], volatility[company], label=company)
-        ax3.legend(fontsize=6)
-        ax3.set_xlabel('Date')
-        ax3.set_ylabel('Rolling Std')
-        st.pyplot(fig3)
 
-    with col6:
-        st.subheader("Correlation Matrix (Log Return)")
-        log_return_filtered = filtered_df[filtered_df.columns[1:]].apply(
-            lambda col: np.log(col / col.shift(1)) if (col > 0).all() else np.nan
-        )
-        if log_return_filtered.dropna(axis=1, how="all").shape[1] < 2:
-            st.warning("Not enough valid data for correlation matrix.")
-        else:
-            fig4, ax4 = plt.subplots(figsize=(6, 4))
-            sns.heatmap(log_return_filtered.corr(), cmap='coolwarm_r', square=True,
-                        xticklabels=log_return_filtered.columns,
-                        yticklabels=log_return_filtered.columns, vmin=-1, vmax=1, ax=ax4)
-            ax4.set_title("Correlation Matrix of PBMZI Companies' Log Return", fontsize=10)
-            st.pyplot(fig4)
-
-# ----------------------------------------------------------------------
-# PAGE 2: MST Overview
-# ----------------------------------------------------------------------
-if page == "MST Overview":
+# =========================
+# PAGE 2 – MST Overview
+# =========================
+elif page == "MST Overview":
     st.title("MST Overview")
 
-    # Function to plot MST for a given dataframe and title
-    def plot_mst(df, title):
-        if df.shape[0] < 2 or df.shape[1] < 3:
-            fig, ax = plt.subplots()
-            ax.text(0.5, 0.5, "Not enough data", ha="center", va="center")
-            ax.set_title(title)
-            ax.axis("off")
-            return fig
-        # Only use positive values for log
-        df_valid = df[(df.iloc[:, 1:] > 0).all(axis=1)].reset_index(drop=True)
-        if df_valid.shape[0] < 2:
-            fig, ax = plt.subplots()
-            ax.text(0.5, 0.5, "Not enough valid data", ha="center", va="center")
-            ax.set_title(title)
-            ax.axis("off")
-            return fig
-        row1, col1 = df_valid.shape
-        returns = np.log(df_valid.iloc[1:row1, 1:col1].values / df_valid.iloc[0:row1-1, 1:col1].values)
-        returns_df = pd.DataFrame(returns, columns=df_valid.columns[1:])
-        if returns_df.isnull().all().all():
-            fig, ax = plt.subplots()
-            ax.text(0.5, 0.5, "Not enough valid returns", ha="center", va="center")
-            ax.set_title(title)
-            ax.axis("off")
-            return fig
+    # Select year
+    selected_year = st.selectbox("Select year:", available_years, index=0)
+    filtered_data = cleaned_PBMZI[cleaned_PBMZI['Date'].dt.year == selected_year]
+
+    if filtered_data.shape[0] > 1:
+        # Calculate log returns
+        row1, column1 = filtered_data.shape
+        returns = np.log(filtered_data.iloc[1:row1, 1:column1].values /
+                         filtered_data.iloc[0:row1-1, 1:column1].values)
+        returns_df = pd.DataFrame(returns, columns=filtered_data.columns[1:])
+
+        # Correlation matrix
         corremat = np.corrcoef(returns_df.T)
-        distmat = np.round
+
+        # Distance matrix
+        distmat = np.round(np.sqrt(2 * (1 - corremat)), 2)
+
+        # Kruskal MST
+        companies = returns_df.columns.tolist()
+        G = nx.Graph()
+        G.add_nodes_from(companies)
+        for i in range(len(companies)):
+            for j in range(i + 1, len(companies)):
+                G.add_edge(companies[i], companies[j], weight=distmat[i, j])
+        MST_PBMZI = nx.minimum_spanning_tree(G, weight="weight", algorithm="kruskal")
+
+        # Node degree colors
+        node_values = dict(MST_PBMZI.degree())
+        values = np.array(list(node_values.values()))
+        norm_nodes = mcolors.Normalize(vmin=values.min(), vmax=values.max())
+        cmap_nodes = cm.get_cmap("summer_r")
+        node_colors = [cmap_nodes(norm_nodes(val)) for val in values]
+        node_sizes = [v * 300 for v in node_values.values()]
+
+        # Edge colors
+        weights = nx.get_edge_attributes(MST_PBMZI, "weight").values()
+        norm_edges = mcolors.Normalize(vmin=min(weights)-0.1, vmax=max(weights)+0.1)
+        edge_colors = [(0, 0, 1, norm_edges(w)) for w in weights]
+        sm_edges = cm.ScalarMappable(cmap=cm.Blues, norm=norm_edges)
+        sm_edges.set_array([])
+
+        # Plot MST
+        fig, ax = plt.subplots(figsize=(10, 10))
+        pos = nx.kamada_kawai_layout(MST_PBMZI)
+        nx.draw(MST_PBMZI, pos,
+                with_labels=True,
+                node_color=node_colors,
+                node_size=node_sizes,
+                font_size=10,
+                font_color="black",
+                edge_color=edge_colors,
+                ax=ax)
+
+        # Colorbars
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.5)
+        sm_nodes = cm.ScalarMappable(cmap=cmap_nodes, norm=norm_nodes)
+        sm_nodes.set_array([])
+        cbar_nodes = fig.colorbar(sm_nodes, cax=cax)
+        cbar_nodes.set_label("Node Degree (Connections)", rotation=270, labelpad=15, fontsize=12)
+
+        cax2 = divider.append_axes("right", size="5%", pad=1.2)
+        cbar_edges = fig.colorbar(sm_edges, cax=cax2)
+        cbar_edges.set_label("Distance between Nodes", rotation=270, labelpad=15, fontsize=12)
+
+        plt.title(f"Minimum Spanning Tree for PBMZI Log Return ({selected_year})", size=16, loc='right', pad=10)
+        st.pyplot(fig)
+    else:
+        st.warning("Not enough data for the selected year to build MST.")
