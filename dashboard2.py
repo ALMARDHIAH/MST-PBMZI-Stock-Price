@@ -113,14 +113,13 @@ if page == "PBMZI (2018-2023)":
     # 5. Correlation Distribution (PBMZI Log Returns)
 
     # Kira log return ikut syarikat dan tahun yang dipilih
-    log_return_df = filtered_data.copy()
-    log_return_df[selected_companies] = log_return_df[selected_companies].apply(lambda col: np.log(col / col.shift(1)))
+    log_return_df = filtered_data[selected_companies].apply(lambda col: np.log(col / col.shift(1)))
 
     # Buang baris NaN (hasil dari shift)
     log_return_df = log_return_df.dropna()
 
     # Kira Pearson correlation matrix untuk syarikat terpilih
-    log_corr_matrix = log_return_df[selected_companies].corr(method='pearson')
+    log_corr_matrix = filtered_data[selected_companies].corr(method='pearson')
 
     # Ambil hanya lower triangle tanpa diagonal
     mask = np.tril(np.ones(log_corr_matrix.shape), k=-1).astype(bool)
