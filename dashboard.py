@@ -171,7 +171,7 @@ elif page == "MST Overview":
         cax2 = divider.append_axes("right", size="5%", pad=1.2)
         cbar_edges = fig.colorbar(sm_edges, cax=cax2)
         cbar_edges.set_label("Distance between Nodes", rotation=270, labelpad=15, fontsize=12)
-        plt.title(f"Minimum Spanning Tree for PBMZI Log Return\n{', '.join(map(str, selected_years))}", size=16, loc='center', pad=10, x=-10)
+        plt.title(f"Minimum Spanning Tree for PBMZI Log Return\n{', '.join(map(str, selected_years))}", size=16, loc='center', pad=10, x=-20)
         #plt.title(f"Minimum Spanning Tree for PBMZI Log Return\n{selected_years}", size=16, loc='left', pad=0)
         st.pyplot(fig)
     else:
