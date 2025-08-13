@@ -5,7 +5,4 @@ matplotlib
 seaborn
 openpyxl
 networkx
-matplotlib.cm
-matplotlib.colors
-mpl_toolkits.axes_grid1
 scipy
