@@ -41,13 +41,11 @@ if page == "PBMZI (2018-2023)":
     selected_companies = st.multiselect("Select companies:", all_companies, default=list(all_companies))
 
     # Select years
-    selected_years = st.multiselect("Select years:", available_years)
-
+    selected_years = st.multiselect("Select years:", available_years, default=available_years)
     # If no year is selected, default to 2018–2023
     if not selected_years:
         selected_years = list(range(2018, 2024))
-
-filtered_data = cleaned_PBMZI[cleaned_PBMZI['Date'].dt.year.isin(selected_years)]
+    filtered_data = cleaned_PBMZI[cleaned_PBMZI['Date'].dt.year.isin(selected_years)]
     # 1. Price Movement
     st.subheader("Price Movement Overview")
     fig, ax = plt.subplots(figsize=(14, 8))
