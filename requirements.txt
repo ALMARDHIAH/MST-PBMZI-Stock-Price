@@ -5,6 +5,7 @@ matplotlib
 seaborn
 openpyxl
 networkx
+matplotlib
 matplotlib.cm
 matplotlib.colors
 mpl_toolkits.axes_grid1
