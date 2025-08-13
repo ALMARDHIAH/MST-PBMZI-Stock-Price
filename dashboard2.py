@@ -111,20 +111,22 @@ if page == "PBMZI (2018-2023)":
     st.pyplot(fig)
     
     # 5. Correlation Distribution (PBMZI Log Returns)
-    st.subheader("Distribution of Pairwise Correlations (PBMZI Log Returns)")
 
-    # Compute log returns
-    log_return_df = cleaned_PBMZI.copy()
-    log_return_df.iloc[:, 1:] = log_return_df.iloc[:, 1:].apply(lambda col: np.log(col / col.shift(1)))
+    # Kira log return ikut syarikat dan tahun yang dipilih
+    log_return_df = filtered_data.copy()
+    log_return_df[selected_companies] = log_return_df[selected_companies].apply(lambda col: np.log(col / col.shift(1)))
 
-    # Pearson correlation matrix
-    log_corr_matrix = log_return_df.iloc[:, 1:].corr(method='pearson')
+    # Buang baris NaN (hasil dari shift)
+    log_return_df = log_return_df.dropna()
 
-    # Take only lower triangle (excluding diagonal)
+    # Kira Pearson correlation matrix untuk syarikat terpilih
+    log_corr_matrix = log_return_df[selected_companies].corr(method='pearson')
+
+    # Ambil hanya lower triangle tanpa diagonal
     mask = np.tril(np.ones(log_corr_matrix.shape), k=-1).astype(bool)
     log_corr_values = log_corr_matrix.where(mask).stack().values
 
-    # Categorize correlation values
+    # Kategori correlation
     bins = [-1.0, -0.7, -0.4, 0, 0.4, 0.7, 1.0]
     labels = [
         'Highly Strong Negative\n[-1.0, -0.7)',
@@ -136,27 +138,28 @@ if page == "PBMZI (2018-2023)":
     ]
     log_corr_categories = pd.cut(log_corr_values, bins=bins, labels=labels, right=False)
 
-    # Count per category
+    # Bilangan setiap kategori
     log_corr_distribution = log_corr_categories.value_counts().sort_index()
 
-    # Plot in Streamlit
+    # Plot bar chart
     fig, ax = plt.subplots(figsize=(10, 6))
     sns.barplot(x=log_corr_distribution.index, y=log_corr_distribution.values, palette='coolwarm_r', ax=ax)
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=0, ha='center')
-    ax.set_title("Distribution of Pairwise Correlations (PBMZI Log Returns)", fontsize=16)
-    ax.set_ylabel("Number of Correlation Pairs")
-    ax.set_xlabel("\nCorrelation Category")
+    plt.xticks(rotation=0, ha='center')
+    plt.title("Distribution of Pairwise Correlations (PBMZI Log Returns)", fontsize=16)
+    plt.ylabel("Number of Correlation Pairs")
+    plt.xlabel("\nCorrelation Category")
 
-    # Add labels above bars
+    # Label nilai atas bar
     for p in ax.patches:
         height = p.get_height()
         ax.text(
             p.get_x() + p.get_width() / 2,
-            height + 0.5,
+            height + 1,
             f'{int(height)}',
             ha='center', va='bottom', fontsize=10
         )
 
+    plt.tight_layout()
     st.pyplot(fig)
 
 
