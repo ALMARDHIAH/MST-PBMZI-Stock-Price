@@ -104,7 +104,7 @@ elif page == "MST Overview":
 
     # If none selected, use default range (2018–2023)
     if not selected_years:
-        selected_years = list(range(2018, 2023))
+        selected_years = list(range(2018, 2024))
 
     # Filter data for selected years
     filtered_data = cleaned_PBMZI[cleaned_PBMZI['Date'].dt.year.isin(selected_years)]
