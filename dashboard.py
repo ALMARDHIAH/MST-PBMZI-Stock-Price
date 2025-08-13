@@ -155,7 +155,7 @@ elif page == "MST Overview":
                 with_labels=True,
                 node_color=node_colors,
                 node_size=node_sizes,
-                font_size=10,
+                font_size=8.5,
                 font_color="black",
                 edge_color=edge_colors,
                 ax=ax)
