@@ -170,7 +170,7 @@ elif page == "MST Overview":
         cbar_edges = fig.colorbar(sm_edges, cax=cax2)
         cbar_edges.set_label("Distance between Nodes", rotation=270, labelpad=15, fontsize=12)
         
-        plt.title(f"Minimum Spanning Tree for PBMZI Log Return ({selected_years})", size=16, loc='right', pad=10)
+        plt.title(f"Minimum Spanning Tree for PBMZI Log Return\n{selected_years}", size=16, loc='right', pad=10)
         st.pyplot(fig)
     else:
         st.warning("Not enough data for the selected year to build MST.")
