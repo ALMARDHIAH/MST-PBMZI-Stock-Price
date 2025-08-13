@@ -99,10 +99,15 @@ if page == "PBMZI (2018-2023)":
 elif page == "MST Overview":
     st.title("MST Overview")
 
-    # Select year
-    selected_year = []
-    st.write("Select year:") for year in available_years: if st.checkbox(str(year)):  selected_year.append(year)
-    filtered_data = cleaned_PBMZI[cleaned_PBMZI['Date'].dt.year == selected_year]
+    # Multi-select year
+    selected_years = st.multiselect( "Select year(s):",available_years)
+
+    # If none selected, use default range (2018–2023)
+    if not selected_years:
+        selected_years = list(range(2018, 2024))
+
+    # Filter data for selected years
+    filtered_data = cleaned_PBMZI[cleaned_PBMZI['Date'].dt.year.isin(selected_years)]
 
     if filtered_data.shape[0] > 1:
         # Calculate log returns
