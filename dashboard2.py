@@ -109,23 +109,22 @@ if page == "PBMZI (2018-2023)":
                 ax=ax)
     ax.set_title("Correlation Matrix of PBMZI Companies' Log Return", size=15, pad=20)
     st.pyplot(fig)
-        # =========================
+    
     # 5. Correlation Distribution (PBMZI Log Returns)
-    # =========================
     st.subheader("Distribution of Pairwise Correlations (PBMZI Log Returns)")
 
-    # 1. Compute log returns
+    # Compute log returns
     log_return_df = cleaned_PBMZI.copy()
     log_return_df.iloc[:, 1:] = log_return_df.iloc[:, 1:].apply(lambda col: np.log(col / col.shift(1)))
 
-    # 2. Pearson correlation matrix
+    # Pearson correlation matrix
     log_corr_matrix = log_return_df.iloc[:, 1:].corr(method='pearson')
 
-    # 3. Take only lower triangle (excluding diagonal)
+    # Take only lower triangle (excluding diagonal)
     mask = np.tril(np.ones(log_corr_matrix.shape), k=-1).astype(bool)
     log_corr_values = log_corr_matrix.where(mask).stack().values
 
-    # 4. Categorize correlation values
+    # Categorize correlation values
     bins = [-1.0, -0.7, -0.4, 0, 0.4, 0.7, 1.0]
     labels = [
         'Highly Strong Negative\n[-1.0, -0.7)',
@@ -137,10 +136,10 @@ if page == "PBMZI (2018-2023)":
     ]
     log_corr_categories = pd.cut(log_corr_values, bins=bins, labels=labels, right=False)
 
-    # 5. Count per category
+    # Count per category
     log_corr_distribution = log_corr_categories.value_counts().sort_index()
 
-    # 6. Plot in Streamlit
+    # Plot in Streamlit
     fig, ax = plt.subplots(figsize=(10, 6))
     sns.barplot(x=log_corr_distribution.index, y=log_corr_distribution.values, palette='coolwarm_r', ax=ax)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=0, ha='center')
@@ -148,7 +147,7 @@ if page == "PBMZI (2018-2023)":
     ax.set_ylabel("Number of Correlation Pairs")
     ax.set_xlabel("\nCorrelation Category")
 
-    # 7. Add labels above bars
+    # Add labels above bars
     for p in ax.patches:
         height = p.get_height()
         ax.text(
