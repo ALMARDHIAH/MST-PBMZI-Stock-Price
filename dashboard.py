@@ -100,7 +100,8 @@ elif page == "MST Overview":
     st.title("MST Overview")
 
     # Select year
-    selected_year = st.multiselect("Select year:", available_years, default=[available_years[0]])
+    selected_year = []
+    st.write("Select year:") for year in available_years: if st.checkbox(str(year)):  selected_year.append(year)
     filtered_data = cleaned_PBMZI[cleaned_PBMZI['Date'].dt.year == selected_year]
 
     if filtered_data.shape[0] > 1:
