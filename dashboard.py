@@ -9,7 +9,7 @@ import matplotlib.colors as mcolors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 st.markdown(
-    """
+    
     <style>
     /* Tukar warna dan gaya tajuk utama */
     h1 {
@@ -27,7 +27,7 @@ st.markdown(
         background-color: #fafafa;
     }
     </style>
-    """,
+    ,
     unsafe_allow_html=True
 )
 
