@@ -119,7 +119,7 @@ if page == "PBMZI (2018-2023)":
     log_return_df = log_return_df.dropna()
 
     # Kira Pearson correlation matrix untuk syarikat terpilih
-    log_corr_matrix = filtered_data[selected_companies].corr(method='pearson')
+    log_corr_matrix = log_return_df[selected_companies].corr(method='pearson')
 
     # Ambil hanya lower triangle tanpa diagonal
     mask = np.tril(np.ones(log_corr_matrix.shape), k=-1).astype(bool)
