@@ -87,14 +87,16 @@ if page == "PBMZI (2018-2023)":
 
     # 3. Volatility
     st.subheader("Volatility (60-Day Rolling STD)")
-    volatility_price_raw = filtered_data[selected_companies].rolling(window=60).std()
+    
+    volatility_return=filtered_data[selected_companies].apply(lambda col: np.log(col / col.shift(1))).rolling(window=60).std()
     fig, ax = plt.subplots(figsize=(14, 8))
-    for company in selected_companies:
-        ax.plot(filtered_data['Date'], volatility_price_raw[company], label=company)
+    for company inselected_companies:
+        ax.plot(filtered_data['Date'], volatility_return[company], label=company)
     ax.legend()
-    ax.set_title("Volatility (60-Day Rolling STD) Based on Raw Price of PBMZIs")
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Rolling Std of Price (~M$)")
+    ax.set_title('60-Day Rolling Volatility Based on PBMZI Logarithmic Return')
+    ax.set_xlabel('Year')
+    ax.set_ylabel('60-Day Rolling Volatility')
+    
     st.pyplot(fig)
 
     # 4. Correlation Matrix
