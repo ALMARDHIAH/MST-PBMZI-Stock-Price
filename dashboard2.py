@@ -86,7 +86,7 @@ if page == "PBMZI (2018-2023)":
     st.pyplot(fig)
 
     # 3. Volatility
-    st.subheader("Volatility (60-Day Rolling STD)")
+    st.subheader(" 60-Day Rolling Volatility")
     
     volatility_return=filtered_data[selected_companies].apply(lambda col: np.log(col / col.shift(1))).rolling(window=60).std()
     fig, ax = plt.subplots(figsize=(14, 8))
